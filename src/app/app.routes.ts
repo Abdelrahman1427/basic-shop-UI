@@ -4,7 +4,7 @@ import { ProductCrudComponent } from './pages/product-crud/product-crud.componen
 import { CartCrudComponent } from './pages/cart-crud/cart-crud.component';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'stocks', pathMatch: 'full' },
+    { path: '', redirectTo: 'qtys', pathMatch: 'full' },
     { path: 'products', component: ProductCrudComponent },
   { path: 'cart', component: CartCrudComponent }
 ];
