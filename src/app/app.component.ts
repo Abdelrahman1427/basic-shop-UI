@@ -15,5 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
+  showWelcome: boolean = false;
+
   title = 'Basic Shop UI';
 }
