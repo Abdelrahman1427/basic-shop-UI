@@ -2,11 +2,9 @@
 <input type="text" [(ngModel)]="filterTerm" (input)="filterProducts()" placeholder="Filter products by name" />
 
 <table>
-
   <thead>
     <tr>
       <th>Name</th>
-      <th>Description</th>
       <th>Price</th>
       <th>Quantity</th>
       <th>Actions</th>
@@ -15,10 +13,10 @@
   <tbody>
     <tr *ngFor="let product of filteredProducts">
       <td>{{ product.name }}</td>
-      <td>{{ product.price }}</td>
+      <td>{{ product.price | currency }}</td>
       <td>{{ product.qty }}</td>
       <td>
-        <button (click)="addToCart(product)">Add to Cart</button>
+        <button (click)="addToCart(product)" [disabled]="product.qty === 0">Add to Cart</button>
       </td>
     </tr>
   </tbody>
@@ -36,16 +34,21 @@
   </thead>
   <tbody>
     <tr *ngFor="let item of cart; let i = index">
-      <td>{{ productMap.get(item.productId)?.name }}</td> <!-- Display product name -->
-      <td>{{ productMap.get(item.productId)?.price }}</td> <!-- Display product price -->
+      <td>{{ productMap.get(item.productId)?.name }}</td>
+      <td>{{ productMap.get(item.productId)?.price | currency }}</td>
       <td>
-        <input type="number" [(ngModel)]="item.quantity" (change)="updateCartItem(item)" min="1" />
+        <input type="number" [(ngModel)]="item.quantity" (change)="updateCartItem(item)" [disabled]="productMap.get(item.productId)?.qty === 0" min="1" />
       </td>
       <td>
         <button (click)="removeFromCart(i)">Remove</button>
       </td>
     </tr>
-    <h2>Total Price: {{ calculateTotalPrice() | currency }}</h2>
-
   </tbody>
 </table>
+
+<h2>Total Price: {{ calculateTotalPrice() | currency }}</h2>
+
+<!-- Display the error message -->
+<div *ngIf="errorMessage" class="error-message" style="color: red;">
+  {{ errorMessage }}
+</div>
