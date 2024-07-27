@@ -1,41 +1,122 @@
 import { Component, OnInit } from '@angular/core';
-import { CartService } from '../../services/cart.service';
-import { CartItem } from '../../models/cart-item.model';
-import { CommonModule } from '@angular/common'; // Import CommonModule
-                                    
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; // Import FormsModule
+import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service'; 
+import { Product } from '../../models/product.model';
+import { CartItem } from '../../models/cart-item.model'; 
+
 @Component({
   selector: 'app-cart-crud',
-  standalone: true, // Mark as standalone component
-  imports: [CommonModule], // Add CommonModule to imports
+  standalone: true,
+  imports: [CommonModule, FormsModule], // Include FormsModule here
   templateUrl: './cart-crud.component.html',
   styleUrls: ['./cart-crud.component.css']
 })
-export class CartCrudComponent implements OnInit {  
-  cartItems: CartItem[] = [];
+export class CartCrudComponent implements OnInit {
+  visibleProducts: Product[] = [];
+  filteredProducts: Product[] = [];
+  cart: CartItem[] = [];
+  productMap: Map<number, Product> = new Map();
+  filterTerm: string = '';
+  errorMessage: string | null = null;
 
-  constructor(private cartService: CartService) { }
+  constructor(private productService: ProductService, private cartService: CartService) {}
 
   ngOnInit(): void {
+    this.loadVisibleProducts();
     this.loadCartItems();
   }
 
+  loadVisibleProducts(): void {
+    this.productService.getVisibleProducts().subscribe(products => {
+      this.visibleProducts = products;
+      this.filteredProducts = products;
+
+      products.forEach(product => this.productMap.set(product.id, product));
+    }, error => {
+      this.handleError(error);
+    });
+  }
+
   loadCartItems(): void {
-    this.cartService.getCartItems().subscribe(cartItems => {
-      this.cartItems = cartItems;
+    this.cartService.getCartItems().subscribe(items => {
+      this.cart = items;
+    }, error => {
+      this.handleError(error);
     });
   }
 
-  editCartItem(cartItem: CartItem): void {
-    // Open a modal or navigate to a form to edit the selected cart item
+  addToCart(product: Product): void {
+    if (product.qty === 0) {
+      this.errorMessage = 'Cannot add product with zero quantity to the cart.';
+      return;
+    }
+
+    const existingCartItem = this.cart.find(item => item.productId === product.id);
+
+    if (existingCartItem) {
+      existingCartItem.quantity += 1;
+      this.updateCartItem(existingCartItem);
+    } else {
+      const cartItem: CartItem = {
+        id: 0,
+        productId: product.id,
+        quantity: 1
+      };
+
+      this.cartService.addToCart(cartItem).subscribe(response => {
+        this.cart.push(response);
+        this.clearError();
+      }, error => {
+        this.handleError(error);
+      });
+    }
   }
 
-  removeFromCart(id: number): void {
-    this.cartService.removeFromCart(id).subscribe(() => {
-      this.loadCartItems();
+  removeFromCart(index: number): void {
+    const cartItem = this.cart[index];
+    this.cartService.removeFromCart(cartItem.id).subscribe(() => {
+      this.cart.splice(index, 1);
+      this.clearError();
+    }, error => {
+      this.handleError(error);
     });
   }
 
-  checkout(): void {
-    // Implement checkout functionality
+  updateCartItem(cartItem: CartItem): void {
+    const product = this.productMap.get(cartItem.productId);
+    if (product && product.qty === 0) {
+      this.errorMessage = 'Cannot increase quantity for product with zero stock.';
+      return;
+    }
+
+    this.cartService.updateCartItem(cartItem.id, cartItem).subscribe(() => {
+      this.clearError();
+    }, error => {
+      this.handleError(error);
+    });
+  }
+
+  calculateTotalPrice(): number {
+    return this.cart.reduce((total, item) => {
+      const product = this.productMap.get(item.productId);
+      return product ? total + product.price * item.quantity : total;
+    }, 0);
+  }
+
+  filterProducts(): void {
+    this.filteredProducts = this.visibleProducts.filter(product =>
+      product.name.toLowerCase().includes(this.filterTerm.toLowerCase())
+    );
+  }
+
+  handleError(error: any): void {
+    this.errorMessage = error.error || 'An unknown error occurred!';
+  }
+
+  clearError(): void {
+    this.errorMessage = null;
   }
 }
+  

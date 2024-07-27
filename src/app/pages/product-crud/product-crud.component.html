@@ -4,8 +4,8 @@
     <tr>
       <th>Name</th>
       <th>Price</th>
-      <th>qty</th>
-      <th>Visible</th> <!-- Add this column for visibility -->
+      <th>Quantity</th>
+      <th>Visible</th>
       <th>Actions</th>
     </tr>
   </thead>
@@ -24,24 +24,24 @@
         <ng-template #viewTemplatePrice>{{ product.price }}</ng-template>
       </td>
       <td>
-        <ng-container *ngIf="editProductId === product.id; else viewTemplateqty">
-          <input type="number" [(ngModel)]="currentProduct.qty" placeholder="qty">
+        <ng-container *ngIf="editProductId === product.id; else viewTemplateQty">
+          <input type="number" [(ngModel)]="currentProduct.qty" placeholder="Quantity">
         </ng-container>
-        <ng-template #viewTemplateqty>{{ product.qty }}</ng-template>
+        <ng-template #viewTemplateQty>{{ product.qty }}</ng-template>
       </td>
       <td>
-        <button (click)="toggleVisibility(product)">
-          {{ product.isVisible ? 'Hide' : 'Show' }} <!-- Toggle button text -->
+        <button (click)="toggleVisibility(product)" class="toggle-btn">
+          {{ product.isVisible ? 'Hide' : 'Show' }}
         </button>
       </td>
       <td>
         <ng-container *ngIf="editProductId === product.id; else actionsTemplate">
-          <button (click)="updateProduct(product.id)">Update</button>
-          <button (click)="cancelEdit()">Cancel</button>
+          <button (click)="updateProduct(product.id)" class="action-btn update-btn">Update</button>
+          <button (click)="cancelEdit()" class="action-btn cancel-btn">Cancel</button>
         </ng-container>
         <ng-template #actionsTemplate>
-          <button (click)="openEdit(product)">Edit</button>
-          <button (click)="deleteProduct(product.id)">Delete</button>
+          <button (click)="openEdit(product)" class="action-btn edit-btn">Edit</button>
+          <button (click)="deleteProduct(product.id)" class="action-btn delete-btn">Delete</button>
         </ng-template>
       </td>
     </tr>
@@ -49,12 +49,12 @@
     <tr>
       <td><input type="text" [(ngModel)]="newProduct.name" placeholder="Name"></td>
       <td><input type="number" [(ngModel)]="newProduct.price" placeholder="Price"></td>
-      <td><input type="number" [(ngModel)]="newProduct.qty" placeholder="qty"></td>
+      <td><input type="number" [(ngModel)]="newProduct.qty" placeholder="Quantity"></td>
       <td>
-        <button (click)="newProduct.isVisible = true">Show</button> <!-- Default to visible -->
+        <button (click)="newProduct.isVisible = true" class="toggle-btn">Show</button>
       </td>
       <td>
-        <button (click)="createProduct()">Add Product</button>
+        <button (click)="createProduct()" class="action-btn add-btn">Add Product</button>
       </td>
     </tr>
   </tbody>
